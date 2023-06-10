@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# Format python files. If in a git repository, format from root, else
+# format from call directory down.
+#
+set -o errexit
+if git status; then
+    reporoot="$(git rev-parse --show-toplevel)"
+else
+    reporoot=.
+pyproj="$reporoot/pyproject.toml"
+
+pushd "$reporoot" &> /dev/null  # no stack output
+
+pyfiles="$(find . -ipath '*.py' -print -o -path ./env -prune)"
+echo $pyfiles
+
+autopep8 --global-config="$pyproj" -i $pyfiles
+isort --settings-path="$pyproj" $pyfiles
+
+popd &> /dev/null  # no stack output
